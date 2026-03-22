@@ -1,0 +1,18 @@
+{{- range $name, $config := .Values.roleBinding }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}
+  namespace: {{ $config.namespace | default $.Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ $config.roleRef.kind }}
+  name: {{ $config.roleRef.name }}
+subjects:
+{{- range $subject := $config.subjects }}
+- kind: {{ $subject.kind }}
+  name: {{ $subject.name }}
+  namespace: {{ $subject.namespace }}
+{{- end }}
+{{- end }}

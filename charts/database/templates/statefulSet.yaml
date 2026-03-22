@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: 
+  name: {{ .Values.db.name }}-db
+spec:
+  serviceName: {{ .Values.db.serviceName }}
+  replicas: {{ .Values.db.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.db.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.db.name }}
+    spec:
+      containers:
+        - name: {{ .Values.db.name }}
+          image: {{ .Values.db.image }}
+          ports: 
+            - containerPort: {{ .Values.db.container.port }}
+          envFrom: 
+          {{- if .Values.db.container.envFromSecret }}
+            - secretRef: 
+                name: {{ .Values.db.container.envFromSecret }}
+          {{- end}}
+          volumeMounts:
+            - name: {{ .Values.claims.name }}
+              mountPath: {{ .Values.claims.path }}
+          {{- range .Values.db.container.volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{- if .subPath }}
+              subPath: {{ .subPath }}
+              {{- end }}
+          {{- end }}
+      {{- if .Values.volume}}
+      volumes:
+        - name: {{ .Values.volume.name }}
+          configMap: 
+            name: {{ .Values.volume.configMap }}
+      {{- end}}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.claims.name }}
+      spec: 
+        accessModes:
+          - {{ .Values.storage.accessModes  }}
+        storageClassName: {{ .Values.storage.storageClassName  }}
+        resources:
+          requests:
+            storage: {{ .Values.storage.size }}
