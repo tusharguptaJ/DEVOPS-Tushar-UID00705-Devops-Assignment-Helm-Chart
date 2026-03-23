@@ -4,7 +4,9 @@ deployments:
     serviceAccountName: deployment-sa
     container:
       name: frontend-app
-      image: us-central1-docker.pkg.dev/cluster-assignment-11037/my-first-docker-repo/frontend:debcb498573e95f055987883cbd81f8653409e74
+      image:
+        repository: cluster-assignment-11037/my-first-docker-repo/frontend
+        tag: debcb498573e95f055987883cbd81f8653409e74
       pullPolicy: IfNotPresent
       ports:
        - containerPort: 80
@@ -20,7 +22,9 @@ deployments:
     serviceAccountName: deployment-sa
     container:
       name: backend
-      image: us-central1-docker.pkg.dev/cluster-assignment-11037/my-first-docker-repo/backend:debcb498573e95f055987883cbd81f8653409e74
+      image: 
+        repository: cluster-assignment-11037/my-first-docker-repo/backend
+        tag: debcb498573e95f055987883cbd81f8653409e74
       pullPolicy: IfNotPresent
       ports:
         - containerPort: 8080

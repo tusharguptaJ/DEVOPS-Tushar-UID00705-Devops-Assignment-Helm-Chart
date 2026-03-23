@@ -2,6 +2,8 @@
 global:
   version: "0.1.0"
   namespace: dev
+  imageRegistry: us-central1-docker.pkg.dev
+  
 
 ingress:
   className: ""

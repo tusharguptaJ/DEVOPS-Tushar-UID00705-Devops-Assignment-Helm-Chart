@@ -20,7 +20,7 @@ spec:
     {{- with $config.container }}
       containers:
         - name: {{ .name }}
-          image: {{ .image }}
+          image: {{ $.Values.global.imageRegistry }}/{{ .image.repository }}:{{ .image.tag }}
           imagePullPolicy: {{ .pullPolicy }}
           ports:
           {{- range $port := .ports  }}
