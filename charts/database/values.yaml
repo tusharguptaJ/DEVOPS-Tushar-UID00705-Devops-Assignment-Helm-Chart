@@ -27,7 +27,7 @@ storageClass:
   name: db-storage
   allowVolumeExpansion: false
   provisioner: pd.csi.storage.gke.io
-  reclaimPolicy: Retain
+  reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
 
 service:
