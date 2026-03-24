@@ -1,0 +1,110 @@
+deployments:
+  frontend:
+    replicas: 1
+    serviceAccountName: deployment-sa
+    container:
+      name: frontend-app
+      image:
+        repository: cluster-assignment-11037/my-first-docker-repo/frontend
+        tag: debcb498573e95f055987883cbd81f8653409e74
+      pullPolicy: IfNotPresent
+      ports:
+       - containerPort: 80
+      resources:
+       limits: 
+         memory: "64Mi"
+         cpu: "80m"
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+  backend:
+    replicas: 1
+    serviceAccountName: deployment-sa
+    container:
+      name: backend
+      image: 
+        repository: cluster-assignment-11037/my-first-docker-repo/backend
+        tag: debcb498573e95f055987883cbd81f8653409e74
+      pullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080
+      resources:
+         limits: 
+           memory: "256Mi"
+           cpu: "120m"
+         requests:
+           memory: "128Mi"
+           cpu: "70m"
+      readinessProbe:
+        httpGet:
+          path: /api/messages
+          port: 8080
+        initialDelaySeconds: 100
+        periodSeconds: 100       
+        timeoutSeconds: 100      
+        failureThreshold: 3 
+      envFromConfigMaps: 
+        - "backend-config"
+      envFromSecrets: 
+        - "db-credentials"
+service:
+  frontend:
+    type: ClusterIP
+    spec: 
+      selector:
+        app: frontend
+    ports:
+      - name: http 
+        protocol: TCP
+        port: 3000
+        targetPort: 80
+  backend:
+    type: ClusterIP
+    spec: 
+      selector:
+        app: backend
+    ports:
+      - name: http 
+        protocol: TCP
+        port: 5000
+        targetPort: 8080
+
+config:
+  backend:
+    data:
+      PORT: 8080
+      DB_NAME: "blog"
+      DB_HOST: "db"
+
+secret:
+  db-credentials:
+    data: 
+      DB_USER: "root"
+      DB_PASS: "password123"
+
+hpa:
+  name: backend-deployment
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUsagePercentage: 80
+  targetMemoryUsagePercentage: 80
+
+serviceAccount:
+  deployment-sa:
+    automountServiceAccountToken: false
+
+rbac:
+  deployment-rules:
+    rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["create", "get", "watch", "list"]
+
+roleBinding:
+  deployment-binding:
+    roleRef: 
+      kind: Role
+      name: deployment-rules
+    subjects:
+      - kind: ServiceAccount
+        name: deployment-sa

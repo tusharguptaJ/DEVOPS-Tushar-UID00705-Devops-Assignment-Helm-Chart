@@ -1,0 +1,78 @@
+{{- range $name, $config := .Values.deployments }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}-deployment
+  labels:
+    app: {{ $name }}
+spec:
+  replicas: {{ $config.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+    spec:
+      serviceAccountName: {{ $config.serviceAccountName }}
+    {{- with $config.container }}
+      containers:
+        - name: {{ .name }}
+          image: {{ $.Values.global.imageRegistry }}/{{ .image.repository }}:{{ .image.tag }}
+          imagePullPolicy: {{ .pullPolicy }}
+          ports:
+          {{- range $port := .ports  }}
+            - containerPort: {{ .containerPort }}
+          {{- end }}
+          resources:
+            limits: 
+              memory: {{ .resources.limits.memory }}
+              cpu: {{ .resources.limits.cpu }}
+            requests:
+              memory: {{ .resources.requests.memory }}
+              cpu: {{ .resources.requests.cpu }}
+          {{- if .startupProbe }}
+          startupProbe:
+            httpGet:
+              path: {{ .startupProbe.httpGet.path }}
+              port: {{ .startupProbe.httpGet.port }}
+            initialDelaySeconds: {{ .startupProbe.initialDelaySeconds }} 
+            periodSeconds: {{ .startupProbe.periodSeconds }}       
+            timeoutSeconds: {{ .startupProbe.timeoutSeconds }}       
+            failureThreshold: {{ .startupProbe.failureThreshold }}  
+          {{- end }} 
+          {{- if .readinessProbe }}
+          readinessProbe:
+            httpGet:
+              path: {{ .readinessProbe.httpGet.path }}
+              port: {{ .readinessProbe.httpGet.port }}
+            initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds }} 
+            periodSeconds: {{ .readinessProbe.periodSeconds }}       
+            timeoutSeconds: {{ .readinessProbe.timeoutSeconds }}       
+            failureThreshold: {{ .readinessProbe.failureThreshold }}  
+          {{- end }} 
+          {{- if .livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: {{ .livenessProbe.httpGet.path }}
+              port: {{ .livenessProbe.httpGet.port }}
+            initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds }} 
+            periodSeconds: {{ .livenessProbe.periodSeconds }}       
+            timeoutSeconds: {{ .livenessProbe.timeoutSeconds }}       
+            failureThreshold: {{ .livenessProbe.failureThreshold }}  
+          {{- end }} 
+          {{- if or .envFromConfigMaps .envFromSecrets }}
+          envFrom:
+            {{- range .envFromConfigMaps }}
+            - configMapRef:
+                name: {{ . }}
+            {{- end }}
+            {{- range .envFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}

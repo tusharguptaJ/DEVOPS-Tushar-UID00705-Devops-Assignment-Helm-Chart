@@ -1,0 +1,36 @@
+db:
+  name: mysql
+  replicas: 1
+  image: mysql:8.0.32
+  serviceName: db
+  secret: 
+    name: mysql-secret
+    type: Opaque
+    data:
+      MYSQL_ROOT_PASSWORD: "password123"
+      MYSQL_DATABASE: "blog"
+  container:
+    port: 4000
+    envFromSecret: mysql-secret
+    volumeMounts: []
+
+claims:
+  name: mysql-data
+  path: /var/lib/mysql
+
+storage:
+  accessModes: ReadWriteOnce
+  storageClassName: db-storage
+  size: 500Mi
+
+storageClass: 
+  name: db-storage
+  allowVolumeExpansion: false
+  provisioner: pd.csi.storage.gke.io
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+
+service:
+  name: db
+  port: 3306
+  targetPort: 4000

@@ -1,0 +1,20 @@
+
+global:
+  version: "0.1.0"
+  namespace: dev
+  imageRegistry: us-central1-docker.pkg.dev
+  
+
+ingress:
+  className: ""
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+          serviceName: frontend-service
+          servicePort: 3000
+        - path: /api
+          pathType: Prefix
+          serviceName: backend-service
+          servicePort: 5000
